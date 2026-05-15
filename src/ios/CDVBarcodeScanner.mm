@@ -790,6 +790,30 @@ parentViewController:(UIViewController*)parentViewController
     [super viewDidAppear:animated];
 }
 
+//--------------------------------------------------------------------------
+- (void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+
+    // Guard: only act if capturing is still YES, meaning the scan was not
+    // completed through the normal cancel/success/error paths.
+    // This fires when iOS dismisses the modal via a background tap on
+    // UIModalPresentationPageSheet, which bypasses cancelButtonPressed entirely
+    // and leaves the JS-side scanInProgress flag stuck at true.
+    if (self.processor && self.processor.capturing) {
+        self.processor.capturing = NO;
+        [self.processor.captureSession stopRunning];
+        self.processor.captureSession = nil;
+        // Fire the JS callback with cancelled:TRUE so the plugin resets
+        // scanInProgress = false and our mixin resets isScanning.
+        [self.processor.plugin
+            returnSuccess:@""
+            format:@""
+            cancelled:TRUE
+            flipped:self.processor.isFlipped
+            callback:self.processor.callback];
+    }
+}
+
 - (AVCaptureVideoOrientation)interfaceOrientationToVideoOrientation:(UIInterfaceOrientation)orientation {
     switch (orientation) {
         case UIInterfaceOrientationPortrait:
