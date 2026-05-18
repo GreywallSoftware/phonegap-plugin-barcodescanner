@@ -129,6 +129,12 @@ BarcodeScanner.prototype.scan = function (successCallback, errorCallback, config
                 config
             );
         };
+        // -------------------------------------------------------------------
+        // Resets the scanInProgress guard. Call this when the app returns from
+        // background so a stale lock does not block the next scan attempt.
+        BarcodeScanner.prototype.cancelScan = function () {
+            scanInProgress = false
+        }
 
         //-------------------------------------------------------------------
         BarcodeScanner.prototype.encode = function (type, data, successCallback, errorCallback, options) {
